@@ -103,10 +103,11 @@ async def rates(ctx):
     rates_dict = currency.get_currencies()
 
     embed=discord.Embed(title="Currency Exchange Rate (BP.TF Suggested)", color=0x7292a9)
-    embed.add_field(name=rates_dict['metal']['name'], value=("**" + str(rates_dict['metal']['price']['value']) + "** USD"), inline=True)
-    embed.add_field(name=rates_dict['hat']['name'], value=("**" + str(rates_dict['hat']['price']['value']) + "** ref"), inline=True)
-    embed.add_field(name=rates_dict['key']['name'], value=("**" + str(rates_dict['key']['price']['value']) + "** ref"), inline=True)
-    embed.add_field(name=rates_dict['earbuds']['name'], value=("**" + str(rates_dict['earbuds']['price']['value']) + "** ref"), inline=True)
+    embed.add_field(name=rates_dict['metal']['name'], value=("**" + str(rates_dict['metal']['price']['value']) + "** USD"), inline=False)
+    embed.add_field(name=rates_dict['keys']['name'], value=("**" + str(rates_dict['keys']['price']['value']) + "** ref"), inline=False)
+
+    embed.add_field(name=rates_dict['earbuds']['name'], value=("**" + str(rates_dict['earbuds']['price']['value']) + "** ref"), inline=False)
+    embed.add_field(name=rates_dict['hat']['name'], value=("**" + str(rates_dict['hat']['price']['value']) + "** ref"), inline=False)
 
     embed.set_footer(text=((f'Requested by {ctx.message.author.display_name} (') + str(ctx.message.author.id) + ')'))
     embed.timestamp = datetime.datetime.utcnow()

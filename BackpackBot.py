@@ -4,6 +4,7 @@ import json
 import math
 import os
 import time
+from difflib import get_close_matches
 
 import BackpackTF
 import discord
@@ -17,7 +18,6 @@ from scipy.interpolate import make_interp_spline
 
 from keep_alive import keep_alive
 
-
 load_dotenv()
 
 intents = discord.Intents.default()
@@ -28,9 +28,6 @@ intents.members = True
 bot = commands.Bot(intents=intents, command_prefix='>')
 
 bot.help_command = PrettyHelp(color=0x7292a9) # 0x7292a9 should be used for all embeds
-
-global channel_say
-channel_say = 0
 
 # client = discord.Client()
 slash = SlashCommand(bot, sync_commands=True)
@@ -68,6 +65,9 @@ watchingStatus = [
 
 listeningStatus = [
                    ]
+
+
+itemlist = json.load("itemcache/items.json")
 
 
 @bot.event
@@ -113,6 +113,12 @@ async def rates(ctx):
     embed.timestamp = datetime.datetime.utcnow()
     
     await ctx.send(embed=embed)
+
+
+@bot.command(brief='Returns price of a item',description='Returns price of a item')
+async def price(ctx, quality, *, item):
+
+    currency.item_price(item=[i for i in itemlist if item.strip().lower() in i.lower()][0], quality=quality, craftable=1, tradable=1, priceindex=0)
 
 
 

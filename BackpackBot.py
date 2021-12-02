@@ -5,6 +5,7 @@ import math
 import os
 import time
 
+import BackpackTF
 import discord
 import matplotlib.pyplot as plt
 import numpy as np
@@ -15,6 +16,7 @@ from pretty_help import PrettyHelp
 from scipy.interpolate import make_interp_spline
 
 from keep_alive import keep_alive
+
 
 load_dotenv()
 
@@ -33,6 +35,7 @@ channel_say = 0
 # client = discord.Client()
 slash = SlashCommand(bot, sync_commands=True)
 
+currency = BackpackTF.Currency(apikey=(os.getenv('backpacktoken')))
 
 async def heartbeat():
 
@@ -69,6 +72,7 @@ listeningStatus = [
 
 @bot.event
 async def on_ready():
+
     print('Logged in as {0.user}'.format(bot), ' - ', bot.user.id)
 
     await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.playing, name='Team Fortress 2'))
@@ -91,6 +95,28 @@ async def on_ready():
     #         await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name=listeningStatus[statusNum]))
 
     #     await asyncio.sleep(10)
+
+
+@bot.command(brief='Returns the current exchange rates for currencies',description='Returns the current exchange rates for currencies')
+async def rates(ctx):
+
+    rates_dict = currency.get_currencies()
+
+    embed=discord.Embed(title="Currency Exchange Rate (BP.TF Suggested)", color=0x7292a9)
+    embed.add_field(name=rates_dict['metal']['name'], value=("**" + str(rates_dict['metal']['price']['value']) + "** USD"), inline=True)
+    embed.add_field(name=rates_dict['hat']['name'], value=("**" + str(rates_dict['hat']['price']['value']) + "** ref"), inline=True)
+    embed.add_field(name=rates_dict['key']['name'], value=("**" + str(rates_dict['key']['price']['value']) + "** ref"), inline=True)
+    embed.add_field(name=rates_dict['earbuds']['name'], value=("**" + str(rates_dict['earbuds']['price']['value']) + "** ref"), inline=True)
+
+    embed.set_footer(text=((f'Requested by {ctx.message.author.display_name} (') + str(ctx.message.author.id) + ')'))
+    embed.timestamp = datetime.datetime.utcnow()
+    
+    await ctx.send(embed=embed)
+
+
+
+# @bot.command(brief='Returns the current price suggestion of an item',description='Returns the current price suggestion of an item')
+# async def price(ctx):
 
 
 @bot.command(brief='Returns user info',description='Returns user info')
@@ -130,6 +156,9 @@ async def ping(ctx):
 
     embed=discord.Embed(title="Pong!", color=0x7292a9)
     embed.add_field(name="Latency", value=(f'`{round(bot.latency * 1000, 3)}ms`'), inline=False)
+    embed.set_footer(text=((f'Requested by {ctx.message.author.display_name} (') + str(ctx.message.author.id) + ')'))
+    embed.timestamp = datetime.datetime.utcnow()
+
     await ctx.send(embed=embed)
 
 
@@ -173,8 +202,8 @@ async def netgraph(ctx):
 async def info(ctx):
 
     await ctx.send('**BackpackBot v0.0.1**\n' \
-        'Discord bot for interacting with Backpack.tf developed by awesomeplaya211#5215 (https://steamcommunity.com/id/_Generic_/)\n' \
-        'Source code is available on GitHub by using *$github*')
+        'Discord bot for interacting with Backpack.tf developed by awesomeplaya211#5215 (SteamID: 76561198849263860)\n' \
+        'Source code is available on GitHub by using *>github*')
 
 
 # @bot.command(brief='Shows my profile picture',description='Shows my profile picture')

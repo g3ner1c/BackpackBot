@@ -5,6 +5,7 @@ import math
 import os
 import time
 from difflib import get_close_matches
+from urllib import quote_plus
 
 import BackpackTF
 import discord
@@ -166,7 +167,7 @@ async def price(ctx, quality, *, item):
 										tradable=1,
 										priceindex=0)
 
-		embed=discord.Embed(title=closest_quality[0] + ' ' + closest_items[0], color=int(quality_dict[closest_quality[0]],base=16), url="https://backpack.tf/stats/"+closest_quality[0]+'/'+ closest_items[0]+"/Tradable/Craftable")
+		embed=discord.Embed(title=closest_quality[0] + ' ' + closest_items[0], color=int(quality_dict[closest_quality[0]],base=16), url=quote_plus("https://backpack.tf/stats/"+closest_quality[0]+'/'+ closest_items[0]+"/Tradable/Craftable"))
 		embed.add_field(name="Price Suggestion", value=("**" + str(item_dict['value']) + ' - ' + str(item_dict['value_high']) + "** " + currency_id_dict[item_dict['currency']]), inline=False)
 		embed.add_field(name="Date Suggested", value=datetime.datetime.fromtimestamp(item_dict['timestamp']), inline=False)
 

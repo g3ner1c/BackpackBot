@@ -69,6 +69,13 @@ listeningStatus = [
 
 itemlist = json.load("itemcache/items.json")
 
+currency_id_dict = {
+    
+    "metal": "Refined",
+    "keys": "Keys"
+
+}
+
 
 @bot.event
 async def on_ready():
@@ -118,7 +125,22 @@ async def rates(ctx):
 @bot.command(brief='Returns price of a item',description='Returns price of a item')
 async def price(ctx, quality, *, item):
 
-    currency.item_price(item=[i for i in itemlist if item.strip().lower() in i.lower()][0], quality=quality, craftable=1, tradable=1, priceindex=0)
+    closest_item = [i for i in itemlist if item.strip().lower() in i.lower()][0]
+
+    item_dict = currency.item_price(item=closest_item,
+                                    quality=quality,
+                                    craftable=1,
+                                    tradable=1,
+                                    priceindex=0)
+
+    embed=discord.Embed(title=quality + ' ' + closest_item, color=0x7292a9)
+    embed.add_field(name="Price Suggestion", value=("**" + str(item_dict['value']) + ' - ' + str(item_dict['value_high']) + "** " + currency_id_dict[item_dict['currency']]), inline=False)
+    embed.add_field(name="Date Suggested", value=datetime.datetime.fromtimestamp(item_dict['timestamp']), inline=False)
+
+    embed.set_footer(text=((f'Requested by {ctx.message.author.display_name} (') + str(ctx.message.author.id) + ')'))
+    embed.timestamp = datetime.datetime.utcnow()
+    
+    await ctx.send()
 
 
 

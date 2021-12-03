@@ -10,6 +10,7 @@ import BackpackTF
 import discord
 import matplotlib.pyplot as plt
 import numpy as np
+import requests
 from discord.ext import commands, tasks
 from discord_slash import SlashCommand
 from dotenv import load_dotenv
@@ -66,8 +67,11 @@ watchingStatus = [
 listeningStatus = [
                    ]
 
+with open("itemcache/items.json",'r') as f:
 
-itemlist = json.load(open("itemcache/items.json",'r'))
+    itemlist = json.load(f)
+    f.close()
+
 
 currency_id_dict = {
     
@@ -122,7 +126,7 @@ async def rates(ctx):
     await ctx.send(embed=embed)
 
 
-@bot.command(brief='Returns price of a item',description='Returns price of a item')
+@bot.command(brief='Returns price of a non-unusual item',description='Returns price of a non-unusual item')
 async def price(ctx, quality, *, item):
 
     closest_items = [i for i in itemlist if item.strip().lower() in i.lower()]
@@ -148,6 +152,53 @@ async def price(ctx, quality, *, item):
     
     await ctx.send(embed=embed)
 
+
+@bot.command(brief='Refreshes cache to get info from new items from updates',description='Refreshes cached JSONs to get info from new items from updates')
+async def refresh(ctx):
+
+    refresh_start = time.time()
+
+    # refresh item list (itemcache/items.json)
+
+    itemdump = currency.get_all_prices()
+
+    itemdump = list(itemdump['items'])
+    itemdump.sort()
+    
+    with open("itemcache/items.json", 'w') as f:
+
+        json.dump(itemdump, f, indent=4)
+
+        f.close()
+
+    with open("itemcache/items.json", 'r') as f:
+        
+        global itemlist
+        itemlist = json.load(f)
+
+        f.close()
+
+    # refresh ids and filters
+
+    filterdump = requests.get("https://backpack.tf/filters").text
+
+    with open("itemcache/filters.json", 'w') as f:
+        
+        json.dump(json.loads(filterdump), f, indent=4) # prettify the json
+
+        f.close()
+
+    refresh_end = time.time() 
+
+    embed=discord.Embed(title="Cache Refresh", color=0x7292a9)
+    embed.add_field(name="Refreshed in", value=str((refresh_end-refresh_start)*1000) + ' milliseconds', inline=False)
+    embed.add_field(name="Date Refreshed", value=datetime.datetime.fromtimestamp(refresh_end), inline=False)
+    embed.add_field(name="Unix Timestamp", value='`'+str(refresh_end)+'`', inline=False)
+
+    embed.set_footer(text=((f'Requested by {ctx.message.author.display_name} (') + str(ctx.message.author.id) + ')'))
+    embed.timestamp = datetime.datetime.utcnow()
+
+    await ctx.send(embed=embed)
 
 
 # @bot.command(brief='Returns the current price suggestion of an item',description='Returns the current price suggestion of an item')

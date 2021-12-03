@@ -136,39 +136,41 @@ async def rates(ctx):
 @bot.command(brief='Returns price of a non-unusual item',description='Returns price of a non-unusual item')
 async def price(ctx, quality, *, item):
 
-	# <fuzzy searching for item name>
+    async with ctx.typing():
 
-	closest_items = [i for i in itemlist if item.strip().lower() in i.lower()]
-		
-	closest_items.sort(key=len)
-		
-	if len(closest_items) == 0:
+        # <fuzzy searching for item name>
 
-		closest_items = get_close_matches(item, itemlist, n=1)
+        closest_items = [i for i in itemlist if item.strip().lower() in i.lower()]
+            
+        closest_items.sort(key=len)
+            
+        if len(closest_items) == 0:
 
-	# </fuzzy searching for item name>
+            closest_items = get_close_matches(item, itemlist, n=1)
 
-	# <fuzzy searching for quality>
-		
-	closest_quality = get_close_matches(quality, list(quality_dict), n=1)
+        # </fuzzy searching for item name>
 
-	# </fuzzy searching quality>
+        # <fuzzy searching for quality>
+            
+        closest_quality = get_close_matches(quality, list(quality_dict), n=1)
 
-	print(closest_items)
-	print(closest_quality)
+        # </fuzzy searching quality>
 
-	item_dict = currency.item_price(item=closest_items[0],
-									quality=closest_quality[0],
-									craftable=1,
-									tradable=1,
-									priceindex=0)
+        print(closest_items)
+        print(closest_quality)
 
-	embed=discord.Embed(title=closest_quality[0] + ' ' + closest_items[0], color=int(quality_dict[closest_quality[0]],base=16))
-	embed.add_field(name="Price Suggestion", value=("**" + str(item_dict['value']) + ' - ' + str(item_dict['value_high']) + "** " + currency_id_dict[item_dict['currency']]), inline=False)
-	embed.add_field(name="Date Suggested", value=datetime.datetime.fromtimestamp(item_dict['timestamp']), inline=False)
+        item_dict = currency.item_price(item=closest_items[0],
+                                        quality=closest_quality[0],
+                                        craftable=1,
+                                        tradable=1,
+                                        priceindex=0)
 
-	embed.set_footer(text=((f'Requested by {ctx.message.author.display_name} (') + str(ctx.message.author.id) + ')'))
-	embed.timestamp = datetime.datetime.utcnow()
+        embed=discord.Embed(title=closest_quality[0] + ' ' + closest_items[0], color=int(quality_dict[closest_quality[0]],base=16), url="https://backpack.tf/stats/"+closest_quality[0]+'/'+ closest_items[0]+"/Tradable/Craftable")
+        embed.add_field(name="Price Suggestion", value=("**" + str(item_dict['value']) + ' - ' + str(item_dict['value_high']) + "** " + currency_id_dict[item_dict['currency']]), inline=False)
+        embed.add_field(name="Date Suggested", value=datetime.datetime.fromtimestamp(item_dict['timestamp']), inline=False)
+
+        embed.set_footer(text=((f'Requested by {ctx.message.author.display_name} (') + str(ctx.message.author.id) + ')'))
+        embed.timestamp = datetime.datetime.utcnow()
 		
 	await ctx.send(embed=embed)
 
@@ -176,47 +178,49 @@ async def price(ctx, quality, *, item):
 @bot.command(brief='Refreshes cache to get info from new items from updates',description='Refreshes cached JSONs to get info from new items from updates')
 async def refresh(ctx):
 
-	refresh_start = time.time()
+    async with ctx.typing():
 
-	# refresh item list (itemcache/items.json)
+        refresh_start = time.time()
 
-	itemdump = currency.get_all_prices()
+        # refresh item list (itemcache/items.json)
 
-	itemdump = list(itemdump['items'])
-	itemdump.sort()
-		
-	with open("itemcache/items.json", 'w') as f:
+        itemdump = currency.get_all_prices()
 
-		json.dump(itemdump, f, indent=4)
+        itemdump = list(itemdump['items'])
+        itemdump.sort()
+            
+        with open("itemcache/items.json", 'w') as f:
 
-		f.close()
+            json.dump(itemdump, f, indent=4)
 
-	with open("itemcache/items.json", 'r') as f:
-		
-		global itemlist
-		itemlist = json.load(f)
+            f.close()
 
-		f.close()
+        with open("itemcache/items.json", 'r') as f:
+            
+            global itemlist
+            itemlist = json.load(f)
 
-	# refresh ids and filters
+            f.close()
 
-	filterdump = requests.get("https://backpack.tf/filters").text
+        # refresh ids and filters
 
-	with open("itemcache/filters.json", 'w') as f:
-		
-		json.dump(json.loads(filterdump), f, indent=4) # prettify the json
+        filterdump = requests.get("https://backpack.tf/filters").text
 
-		f.close()
+        with open("itemcache/filters.json", 'w') as f:
+            
+            json.dump(json.loads(filterdump), f, indent=4) # prettify the json
 
-	refresh_end = time.time() 
+            f.close()
 
-	embed=discord.Embed(title="Cache Refresh", color=0x7292a9)
-	embed.add_field(name="Refreshed in", value=str((refresh_end-refresh_start)*1000) + ' milliseconds', inline=False)
-	embed.add_field(name="Date Refreshed", value=datetime.datetime.fromtimestamp(refresh_end), inline=False)
-	embed.add_field(name="Unix Timestamp", value='`'+str(refresh_end)+'`', inline=False)
+        refresh_end = time.time() 
 
-	embed.set_footer(text=((f'Requested by {ctx.message.author.display_name} (') + str(ctx.message.author.id) + ')'))
-	embed.timestamp = datetime.datetime.utcnow()
+        embed=discord.Embed(title="Cache Refresh", color=0x7292a9)
+        embed.add_field(name="Refreshed in", value=str((refresh_end-refresh_start)*1000) + ' milliseconds', inline=False)
+        embed.add_field(name="Date Refreshed", value=datetime.datetime.fromtimestamp(refresh_end), inline=False)
+        embed.add_field(name="Unix Timestamp", value='`'+str(refresh_end)+'`', inline=False)
+
+        embed.set_footer(text=((f'Requested by {ctx.message.author.display_name} (') + str(ctx.message.author.id) + ')'))
+        embed.timestamp = datetime.datetime.utcnow()
 
 	await ctx.send(embed=embed)
 
@@ -271,35 +275,37 @@ async def ping(ctx):
 @bot.command(brief='Returns a latency graph',description='Returns a latency graph over the past 10 minutes')
 async def netgraph(ctx):
 
-	time_since_ping = round(time.time() - time_ping)
+    async with ctx.typing():
 
-	x = np.append(np.arange((len(ping_arr) - 1)*-
-				  40, 1, 40) - time_since_ping, 0)
-	y = np.append(ping_arr, ping_arr[len(ping_arr) - 1])
+        time_since_ping = round(time.time() - time_ping)
 
-	X_ = np.linspace(min(x), max(x), 500)
-	X_Y_Spline = make_interp_spline(x, y)
-	Y_ = X_Y_Spline(X_)
+        x = np.append(np.arange((len(ping_arr) - 1)*-
+                    40, 1, 40) - time_since_ping, 0)
+        y = np.append(ping_arr, ping_arr[len(ping_arr) - 1])
 
-	plt.plot(X_, Y_, color='red')
+        X_ = np.linspace(min(x), max(x), 500)
+        X_Y_Spline = make_interp_spline(x, y)
+        Y_ = X_Y_Spline(X_)
 
-	plt.xlim(-600, 0)
+        plt.plot(X_, Y_, color='red')
 
-	plt.ylim(0, max(Y_)*1.1)
+        plt.xlim(-600, 0)
 
-	plt.xlabel('Time')
+        plt.ylim(0, max(Y_)*1.1)
 
-	plt.ylabel('Milliseconds')
+        plt.xlabel('Time')
 
-	plt.title('Latency within the last 10 minutes')
+        plt.ylabel('Milliseconds')
 
-	plt.savefig("temp/netgraph.png")
+        plt.title('Latency within the last 10 minutes')
 
-	file = discord.File("temp/netgraph.png")
-	embed = discord.Embed(color=0x7292a9)
-	embed.set_image(url="attachment://netgraph.png")
-	embed.set_footer(text=((f'Requested by {ctx.message.author.display_name} (') + str(ctx.message.author.id) + ')'))
-	embed.timestamp = datetime.datetime.utcnow()
+        plt.savefig("temp/netgraph.png")
+
+        file = discord.File("temp/netgraph.png")
+        embed = discord.Embed(color=0x7292a9)
+        embed.set_image(url="attachment://netgraph.png")
+        embed.set_footer(text=((f'Requested by {ctx.message.author.display_name} (') + str(ctx.message.author.id) + ')'))
+        embed.timestamp = datetime.datetime.utcnow()
 	await ctx.send(embed=embed, file=file)
 	plt.clf()
 

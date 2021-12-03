@@ -131,7 +131,7 @@ async def price(ctx, quality, *, item):
     
     if len(closest_items) == 0:
 
-        closest_items = get_close_matches(item, n=1)
+        closest_items = get_close_matches(item, itemlist, n=1)
 
     item_dict = currency.item_price(item=closest_items[0],
                                     quality=quality,

@@ -72,6 +72,13 @@ with open("itemcache/items.json",'r') as f:
     itemlist = json.load(f)
     f.close()
 
+with open("itemcache/filters.json",'r') as f:
+
+    filterlist = json.load(f)
+    f.close()
+
+quality_dict = {i["name"]:i["color"] for i in filterlist["quality"]}
+# quality_name : color_hex
 
 currency_id_dict = {
     
@@ -129,6 +136,8 @@ async def rates(ctx):
 @bot.command(brief='Returns price of a non-unusual item',description='Returns price of a non-unusual item')
 async def price(ctx, quality, *, item):
 
+    # <fuzzy searching for item name>
+
     closest_items = [i for i in itemlist if item.strip().lower() in i.lower()]
     
     closest_items.sort(key=len)
@@ -137,13 +146,21 @@ async def price(ctx, quality, *, item):
 
         closest_items = get_close_matches(item, itemlist, n=1)
 
+    # </fuzzy searching for item name>
+
+    # <fuzzy searching for quality>
+    
+    closest_quality = get_close_matches(quality, list(quality_dict), n=1)
+
+    # </fuzzy searching quality>
+
     item_dict = currency.item_price(item=closest_items[0],
-                                    quality=quality,
+                                    quality=closest_quality,
                                     craftable=1,
                                     tradable=1,
                                     priceindex=0)
 
-    embed=discord.Embed(title=quality + ' ' + closest_items[0], color=0x7292a9)
+    embed=discord.Embed(title=quality + ' ' + closest_items[0], color=hex(int(quality_dict[closest_quality],base=16)))
     embed.add_field(name="Price Suggestion", value=("**" + str(item_dict['value']) + ' - ' + str(item_dict['value_high']) + "** " + currency_id_dict[item_dict['currency']]), inline=False)
     embed.add_field(name="Date Suggested", value=datetime.datetime.fromtimestamp(item_dict['timestamp']), inline=False)
 

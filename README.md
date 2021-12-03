@@ -20,7 +20,7 @@ to install dependencies from the poetry.lock file
 
 ### TODO
 
-```sh
+```txt
 Update item list to Smissmas 2021
 Add item quality colors
 ```

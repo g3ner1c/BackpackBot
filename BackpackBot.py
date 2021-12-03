@@ -128,6 +128,10 @@ async def price(ctx, quality, *, item):
     closest_items = [i for i in itemlist if item.strip().lower() in i.lower()]
     
     closest_items.sort(key=len)
+    
+    if len(closest_items) == 0:
+
+        closest_items = get_close_matches(item, n=1)
 
     item_dict = currency.item_price(item=closest_items[0],
                                     quality=quality,
